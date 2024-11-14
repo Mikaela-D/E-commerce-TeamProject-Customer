@@ -10,8 +10,6 @@ public class CustomerService {
 
     @Autowired
     private final CustomerRepository customerRepository;
-
-    @Autowired
     public CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
     }
@@ -28,13 +26,22 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    public Optional<Customer> updateCustomer(String id, Customer updatedCustomer) {
-        return customerRepository.findById(id).map(customer -> {
+    public Customer updateCustomer(String id, Customer customer) {
+    /*    return customerRepository.findById(id).map(customer -> {
             customer.setName(updatedCustomer.getName());
             customer.setEmail(updatedCustomer.getEmail());
             customer.setAddress(updatedCustomer.getAddress());
             return customerRepository.save(customer);
-        });
+        });*/
+        Optional<Customer> queryCustomer = customerRepository.findById(id);
+        if(!queryCustomer.isPresent()){
+            throw new RuntimeException("This customer ID does not exist");
+        }
+        Customer updatedCustomer = queryCustomer.get();
+        updatedCustomer.setName(customer.getName());
+        updatedCustomer.setEmail(customer.getEmail());
+        updatedCustomer.setAddress(customer.getAddress());
+        return customerRepository.save(updatedCustomer);
     }
 
     public boolean deleteCustomer(String id) {

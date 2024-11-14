@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/customers")
+
 public class CustomerController {
 
     private final CustomerService customerService;
@@ -19,18 +20,22 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-    @GetMapping("/get")
+    //get all customers list
+    @GetMapping
     public ResponseEntity<List<Customer>> getAllCustomers() {
         List<Customer> customers = customerService.getAllCustomers();
         return ResponseEntity.ok(customers);
     }
 
-    @GetMapping("/get/{id}")
+    //fetch by ID
+    @GetMapping("/id/{id}")
     public ResponseEntity<Customer> getCustomerById(@PathVariable String id) {
         Optional<Customer> customer = customerService.getCustomerById(id);
         return customer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+
+    //Add new customer into the db
     @PostMapping("/create")
     public ResponseEntity<Customer> createCustomer(@Valid @RequestBody Customer customer) {
         Customer savedCustomer = customerService.createCustomer(customer);
@@ -38,9 +43,15 @@ public class CustomerController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Customer> updateCustomer(@PathVariable String id, @Valid @RequestBody Customer updatedCustomer) {
-        Optional<Customer> customer = customerService.updateCustomer(id, updatedCustomer);
-        return customer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<Customer> updateCustomer(@PathVariable String id, @Valid @RequestBody Customer customer) {
+        /*Optional<Customer> customer = customerService.updateCustomer(id, updatedCustomer);
+        return customer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());*/
+        try{
+            Customer updatedCustomer = customerService.updateCustomer(id, customer);
+            return ResponseEntity.ok(updatedCustomer);
+        }catch (RuntimeException e){
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/delete/{id}")
