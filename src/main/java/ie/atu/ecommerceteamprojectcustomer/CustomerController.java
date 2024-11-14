@@ -14,11 +14,20 @@ import java.util.Optional;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final CustomerClient customerClient;
 
     @Autowired
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(CustomerService customerService, CustomerClient customerClient) {
         this.customerService = customerService;
+        this.customerClient = customerClient;
     }
+
+    //to check connection with Product service
+    @GetMapping("/check-connection")
+    public String checkConnection() {
+        return customerClient.connectionConfirmation();
+    }
+
 
     //get all customers list
     @GetMapping
@@ -58,5 +67,12 @@ public class CustomerController {
     public ResponseEntity<Void> deleteCustomer(@PathVariable String id) {
         boolean deleted = customerService.deleteCustomer(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+
+    //To establish connection with payment service (will be called by PaymentClient to display this message and ensure it is connected)
+    @GetMapping("/confirm-paymentService")
+    public String confirmPaymentService() {
+        return "Connected with Customer Service";
     }
 }
