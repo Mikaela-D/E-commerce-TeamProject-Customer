@@ -1,5 +1,6 @@
 package ie.atu.ecommerceteamprojectcustomer;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -8,10 +9,13 @@ import java.util.Optional;
 @Service
 public class CustomerService {
 
-    @Autowired
+
     private final CustomerRepository customerRepository;
-    public CustomerService(CustomerRepository customerRepository) {
+    private final RabbitTemplate rabbitTemplate;
+    @Autowired
+    public CustomerService(CustomerRepository customerRepository, RabbitTemplate rabbitTemplate) {
         this.customerRepository = customerRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public List<Customer> getAllCustomers() {
@@ -23,6 +27,8 @@ public class CustomerService {
     }
 
     public Customer createCustomer(Customer customer) {
+        rabbitTemplate.convertAndSend("customerQueue", customer);
+        System.out.println("Saved customer details: " + customer);
         return customerRepository.save(customer);
     }
 
@@ -41,6 +47,7 @@ public class CustomerService {
         updatedCustomer.setName(customer.getName());
         updatedCustomer.setEmail(customer.getEmail());
         updatedCustomer.setAddress(customer.getAddress());
+        rabbitTemplate.convertAndSend("customerQueue", customer);
         return customerRepository.save(updatedCustomer);
     }
 
