@@ -12,10 +12,10 @@ public class CustomerService {
 
 
     private final CustomerRepository customerRepository;
-    private final RabbitTemplate rabbitTemplate;
+
     @Autowired
-    public CustomerService(CustomerRepository customerRepository, RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
+    public CustomerService(CustomerRepository customerRepository) {
+
         this.customerRepository = customerRepository;
     }
 
@@ -28,9 +28,9 @@ public class CustomerService {
     }
 
     public Customer createCustomer(Customer customer) {
-        rabbitTemplate.convertAndSend("customerQueue", customer);
+
         System.out.println("Saved customer details: " + customer);
-        rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EXCHANGE, RabbitMQConfig.ORDER_ROUTING_KEY, customer);
+
         return customerRepository.save(customer);
     }
 
@@ -51,7 +51,7 @@ public class CustomerService {
         updatedCustomer.setName(customer.getName());
         updatedCustomer.setEmail(customer.getEmail());
         updatedCustomer.setAddress(customer.getAddress());
-        rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EXCHANGE, RabbitMQConfig.ORDER_ROUTING_KEY, customer);
+
         return customerRepository.save(updatedCustomer);
     }
 
