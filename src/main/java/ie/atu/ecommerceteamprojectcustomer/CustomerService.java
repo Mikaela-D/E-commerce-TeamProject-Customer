@@ -1,5 +1,6 @@
 package ie.atu.ecommerceteamprojectcustomer;
 
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,8 +15,8 @@ public class CustomerService {
     private final RabbitTemplate rabbitTemplate;
     @Autowired
     public CustomerService(CustomerRepository customerRepository, RabbitTemplate rabbitTemplate) {
-        this.customerRepository = customerRepository;
         this.rabbitTemplate = rabbitTemplate;
+        this.customerRepository = customerRepository;
     }
 
     public List<Customer> getAllCustomers() {
@@ -29,6 +30,7 @@ public class CustomerService {
     public Customer createCustomer(Customer customer) {
         rabbitTemplate.convertAndSend("customerQueue", customer);
         System.out.println("Saved customer details: " + customer);
+        rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EXCHANGE, RabbitMQConfig.ORDER_ROUTING_KEY, customer);
         return customerRepository.save(customer);
     }
 
@@ -44,10 +46,12 @@ public class CustomerService {
             throw new RuntimeException("This customer ID does not exist");
         }
         Customer updatedCustomer = queryCustomer.get();
+
+        updatedCustomer.setPaymentId(customer.getPaymentId());
         updatedCustomer.setName(customer.getName());
         updatedCustomer.setEmail(customer.getEmail());
         updatedCustomer.setAddress(customer.getAddress());
-        rabbitTemplate.convertAndSend("customerQueue", customer);
+        rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EXCHANGE, RabbitMQConfig.ORDER_ROUTING_KEY, customer);
         return customerRepository.save(updatedCustomer);
     }
 
